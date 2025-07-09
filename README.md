@@ -2,6 +2,12 @@
 
 A modern **Retrieval-Augmented Generation (RAG)** chatbot built with **LangChain** that allows you to upload PDF documents and have intelligent conversations about their content. Features a ChatGPT-like interface powered by Groq's LLaMA 3.1 70B model, Qdrant vector database, and HuggingFace embeddings.
 
+## 📸 Live Demo
+
+![LangChain RAG Assistant Interface](frontend/public/rag-chatbot-ui.png)
+
+*Modern ChatGPT-like interface with responsive sidebar, document upload, and real-time chat powered by LangChain RAG pipeline*
+
 ## 🌟 Features
 
 ### Core RAG Functionality
