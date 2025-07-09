@@ -1,11 +1,10 @@
-// routes/upload.js
 import express from 'express';
 import multer from 'multer';
-import { processPDFAndStore } from '../services/pdfService.js';
+import { processAndStorePDF } from '../services/langchainRAGService.js';
 
 const router = express.Router();
 
-// Configure multer for memory storage (don't save to disk)
+// Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -21,44 +20,47 @@ const upload = multer({
   }
 });
 
-// POST /upload - Upload and process PDF
+// POST /langchain/upload - Upload and process PDF with LangChain
 router.post('/', upload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No PDF file uploaded' });
     }
 
-    console.log(`📤 Received PDF upload: ${req.file.originalname} (${req.file.size} bytes)`);
+    console.log(`📤 LangChain PDF upload: ${req.file.originalname} (${req.file.size} bytes)`);
 
-    // Process the PDF and store in vector database
-    const result = await processPDFAndStore(req.file.buffer, req.file.originalname);
+    // Process the PDF with LangChain and store in vector database
+    const result = await processAndStorePDF(req.file.buffer, req.file.originalname);
 
     res.json({
       success: true,
-      message: 'PDF uploaded and processed successfully',
+      message: 'PDF uploaded and processed successfully with LangChain',
       data: result
     });
 
   } catch (error) {
-    console.error('❌ Upload error:', error);
+    console.error('❌ LangChain upload error:', error);
     
     if (error.message.includes('Only PDF files are allowed')) {
       return res.status(400).json({ error: 'Only PDF files are allowed' });
     }
     
     res.status(500).json({ 
-      error: 'Failed to process PDF',
+      error: 'Failed to process PDF with LangChain',
       details: error.message 
     });
   }
 });
 
-// GET /upload/status - Check upload status
+// GET /langchain/upload/status - Check LangChain upload status
 router.get('/status', (req, res) => {
   res.json({
-    message: 'Upload service is running',
+    message: 'LangChain upload service is running',
     supported_formats: ['PDF'],
-    max_file_size: '10MB'
+    max_file_size: '10MB',
+    processing_method: 'LangChain PDFLoader + RecursiveCharacterTextSplitter',
+    vector_store: 'Qdrant',
+    embeddings: 'HuggingFace MiniLM-L6-v2'
   });
 });
 

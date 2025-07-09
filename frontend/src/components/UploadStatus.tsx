@@ -1,6 +1,6 @@
 'use client'
 
-import { DocumentTextIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { DocumentTextIcon, ClockIcon, FolderIcon, CheckBadgeIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { UploadedFile } from './ChatInterface'
 
 interface UploadStatusProps {
@@ -15,63 +15,115 @@ export default function UploadStatus({ uploadedFiles }: UploadStatusProps) {
   }
 
   const formatTime = (date: Date) => {
-    return date.toLocaleString()
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return 'Just now'
+    if (minutes < 60) return `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    return `${days}d ago`
   }
+
+  const getTotalStats = () => {
+    const totalSize = uploadedFiles.reduce((sum, file) => sum + file.size, 0)
+    const totalChunks = uploadedFiles.reduce((sum, file) => sum + file.chunks, 0)
+    return { totalSize, totalChunks }
+  }
+
+  const { totalSize, totalChunks } = getTotalStats()
 
   if (uploadedFiles.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          📊 Document Status
-        </h3>
-        <div className="text-center text-gray-500 py-8">
-          <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-          <p className="text-sm">No documents uploaded yet</p>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-100">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <FolderIcon className="w-5 h-5 text-gray-500" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Knowledge Base</h3>
+              <p className="text-xs text-gray-600">Your uploaded documents</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 text-center">
+          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+            <DocumentTextIcon className="w-5 h-5 text-gray-400" />
+          </div>
+          <h4 className="text-sm font-medium text-gray-900 mb-1">No documents yet</h4>
+          <p className="text-xs text-gray-600">Upload your first PDF to start</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        📊 Uploaded Documents ({uploadedFiles.length})
-      </h3>
-      
-      <div className="space-y-3">
-        {uploadedFiles.map((file, index) => (
-          <div
-            key={index}
-            className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
-          >
-            <DocumentTextIcon className="h-6 w-6 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {file.name}
-              </p>
-              <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
-                <span>{formatFileSize(file.size)}</span>
-                <span>•</span>
-                <span>{file.chunks} chunks</span>
-              </div>
-              <div className="mt-1 flex items-center space-x-1 text-xs text-gray-400">
-                <ClockIcon className="h-3 w-3" />
-                <span>{formatTime(file.uploadedAt)}</span>
-              </div>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Header with Stats */}
+      <div className="px-4 py-3 bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <CheckBadgeIcon className="w-5 h-5 text-green-600" />
             </div>
-            <div className="flex-shrink-0">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ✓ Processed
-              </span>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Knowledge Base</h3>
+              <p className="text-xs text-gray-600">{uploadedFiles.length} document{uploadedFiles.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
-        ))}
+          <div className="text-right">
+            <p className="text-sm font-bold text-green-600">{totalChunks}</p>
+            <p className="text-xs text-gray-600">chunks</p>
+          </div>
+        </div>
       </div>
-      
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-        <p className="text-xs text-blue-700">
-          💡 <strong>Tip:</strong> You can now ask questions about any of these documents!
-        </p>
+
+      {/* Compact Stats - only show when there are files */}
+      {uploadedFiles.length > 0 && (
+        <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+          <div className="flex items-center justify-between text-xs text-gray-600">
+            <span>{uploadedFiles.length} files</span>
+            <span>{formatFileSize(totalSize)}</span>
+            <span>{totalChunks} chunks</span>
+          </div>
+        </div>
+      )}
+
+      {/* File List - with conditional scrolling */}
+      <div className={`${uploadedFiles.length > 4 ? 'max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent' : ''}`}>
+        <div className="divide-y divide-gray-100">
+          {uploadedFiles.map((file, index) => (
+            <div key={index} className="px-4 py-2 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                  <DocumentTextIcon className="w-3 h-3 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-gray-900 truncate">
+                    {file.name}
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-500">
+                      {formatFileSize(file.size)}
+                    </span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs text-gray-500">
+                      {file.chunks} chunks
+                    </span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs text-gray-500">
+                      {formatTime(file.uploadedAt)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chat with Course Notes - AI-Powered PDF Assistant",
-  description: "Upload PDF documents and chat with them using AI. Perfect for studying lecture notes, research papers, and textbooks.",
+  title: "LangChain RAG Assistant",
+  description: "Intelligent document analysis powered by LangChain, Groq LLaMA 3.1 70B, and Qdrant vector database. Upload PDFs and get comprehensive AI-powered answers.",
 };
 
 export default function RootLayout({
